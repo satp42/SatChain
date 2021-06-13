@@ -29,3 +29,45 @@ const genesisBlock: Block = new Block(
 
 const calculateHash = (index: number, previousHash:string, timestamp: number, data:string): string =>
     CryptoJS.SHA256(index + previousHash + timestamp + data).toString();
+
+const isValidNewBlock = (newBlock: Block, previousBlock: Block) => {
+    if(previousBlock.index + 1 !== newBlock.index) {
+        console.log("Invalid index");
+        return false;
+    }
+    else if(previousBlock.hash !== newBlock.hash) {
+        console.log("Previous block has invalid");
+        return false;
+    }
+    else if(calculateHash(newBlock) !== newBlock.hash) {
+        console.log(typeof(newBlock.hash) + ' ' + typeof(calculateHash(newBlock)));
+        console.log('invalid hash');
+        return false
+    }
+    return true;
+}
+
+const isValidBlockStructure = (block: Block): boolean => {
+    return typeof block.index === 'number'
+        && typeof block.hash === 'string'
+        && typeof block.previousHash === 'string'
+        && typeof block.timestamp === 'number'
+        && typeof block.data === 'string';
+}
+
+const isValidChain = (blockchainToValidate: Block[]): boolean => {
+    const isValidGenesis = (block: Block): boolean => {
+        return JSON.stringify(block) === JSON.stringify(genesisBlock);
+    };
+
+    if(!isValidGenesis(blockchainToValidate[0])) {
+        return false;
+    }
+
+    for(let i=1, i<blockchainToValidate.length, i++) {
+        if(!isValidNewBlock(blockchainToValidate[i], blockchainToValidate[i-1])) {
+            return false;
+        }
+    }
+    return true;
+};
